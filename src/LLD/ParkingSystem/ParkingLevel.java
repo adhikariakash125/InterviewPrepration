@@ -1,54 +1,64 @@
 package LLD.ParkingSystem;
 
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ParkingLevel {
-    private int id;
-    private final Map<Integer,ParkingSpot> parkingSpots; // key is parkingSpot location on level -> Lvl 1 P 3
+    private int level;
+    private HashMap<Integer, ParkingSpot> available;
+    private HashMap<Integer, ParkingSpot> occupied;
 
-    public ParkingLevel(int id) {
-        this.id = id;
-        this.parkingSpots = new ConcurrentHashMap<>();
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public Map<Integer, ParkingSpot> getParkingSpots() {
-        return parkingSpots;
+    public ParkingLevel(int level) {
+        this.level = level;
+        this.available = new HashMap<>();
+        this.occupied = new HashMap<>();
     }
 
     public void addParkingSpot(ParkingSpot parkingSpot){
-        parkingSpots.put(parkingSpot.getId(),parkingSpot);
+        available.put(parkingSpot.getId(), parkingSpot);
     }
 
-    public void occupySpot(int spotNumber,Vehicle vehicle){
-        ParkingSpot parkingSpot = parkingSpots.get(spotNumber);
-        if (parkingSpot==null){
-            System.out.println("No such parking spot present");
+    public void occupySpot(ParkingSpot parkingSpot){
+        ParkingSpot spot = available.get(parkingSpot.getId());
+        if (spot!=null){
+            available.remove(spot.getId());
+            occupied.put(spot.getId(),spot);
+            System.out.println("Parking Spot booked with id: " + spot.getId());
             return;
         }
-        if (!parkingSpot.getAllowedVehicle().equals(vehicle)){
-            throw new IllegalStateException(vehicle + " vehicle is not supported at this spot");
-        }
-        parkingSpot.setEmpty(Boolean.FALSE);
-        parkingSpots.put(spotNumber,parkingSpot);
+        System.out.println("No parking spot available with id :- " + spot.getId());
     }
 
-    public void emptySpot(Integer spotNumber) {
-        ParkingSpot parkingSpot = parkingSpots.get(spotNumber);
-        if (parkingSpot==null){
-            System.out.println("No such parking spot present");
-        }else {
-            parkingSpot.setEmpty(Boolean.TRUE);
-            parkingSpots.put(spotNumber,parkingSpot);
+    public void freeSpot(ParkingSpot parkingSpot){
+        ParkingSpot spot = occupied.get(parkingSpot.getId());
+        if (spot!=null){
+            spot.freeParkingSpot();
+            occupied.remove(spot.getId());
+            available.put(spot.getId(),spot);
         }
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public HashMap<Integer, ParkingSpot> getAvailable() {
+        return available;
+    }
+
+    public void setAvailable(HashMap<Integer, ParkingSpot> available) {
+        this.available = available;
+    }
+
+    public HashMap<Integer, ParkingSpot> getOccupied() {
+        return occupied;
+    }
+
+    public void setOccupied(HashMap<Integer, ParkingSpot> occupied) {
+        this.occupied = occupied;
     }
 }

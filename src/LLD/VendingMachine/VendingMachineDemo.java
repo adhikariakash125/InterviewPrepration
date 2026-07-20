@@ -1,7 +1,10 @@
 package LLD.VendingMachine;
 
+import LLD.VendingMachine.enums.Coin;
 import LLD.VendingMachine.model.Item;
 import LLD.VendingMachine.model.VendingMachine;
+
+import java.util.HashMap;
 
 public class VendingMachineDemo {
     public static void main(String[] args) {
@@ -26,7 +29,9 @@ public class VendingMachineDemo {
 
         // Insert money
         System.out.println("\n--- Step 2: Insert money ---");
-        vendingMachine.insertMoney(100);
+        HashMap<Coin,Integer> coinIntegerHashMap = new HashMap<>();
+        coinIntegerHashMap.put(Coin.RUPEES10,10);
+        vendingMachine.insertMoney(coinIntegerHashMap);
 
         // Dispense the product
         System.out.println("\n--- Step 3: Dispense item ---");
@@ -38,7 +43,9 @@ public class VendingMachineDemo {
 
         // Insert more amount
         System.out.println("\n--- Step 5: Insert more than needed ---");
-        vendingMachine.insertMoney(76); // 25
+        coinIntegerHashMap.clear();
+        coinIntegerHashMap.put(Coin.RUPEES20,4);
+        vendingMachine.insertMoney(coinIntegerHashMap);
 
         // Try to dispense the product
         System.out.println("\n--- Step 6: Dispense and return change ---");

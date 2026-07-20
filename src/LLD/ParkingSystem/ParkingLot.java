@@ -1,61 +1,50 @@
 package LLD.ParkingSystem;
 
-import java.util.HashMap;
+import LLD.ParkingSystem.ParkingStratergy.NearestParkingSpotStrategy;
+import LLD.ParkingSystem.ParkingStratergy.Strategy;
+import LLD.ParkingSystem.PaymentStrategy.PaymentService;
+import LLD.ParkingSystem.Vehicle.Vehicle;
+import LLD.ParkingSystem.enums.VehicleSize;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class ParkingLot {
-    private final Map<Integer, ParkingLevel> parkingLotMap;
-    private static ParkingLot parkingLot;
-
-    public static synchronized ParkingLot getInstance() {
-        if (parkingLot != null) {
-            return parkingLot;
-        }
-        return new ParkingLot();
-    }
+    private static volatile ParkingLot instance;
+    private final List<ParkingLevel> parkingLevels = new ArrayList<>();
+    private final Strategy parkingStrategy;
 
     private ParkingLot() {
-        this.parkingLotMap = new ConcurrentHashMap<>();
+        parkingStrategy = new NearestParkingSpotStrategy();
     }
 
-    public Map<Integer, ParkingLevel> getParkingLotMap() {
-        return parkingLotMap;
-    }
-
-    public void addParkingLevel(ParkingLevel parkingLevel){
-        parkingLotMap.put(parkingLevel.getId(),parkingLevel);
-    }
-
-    public Map<Integer, List<ParkingSpot>> getFreeSpacesByLevel() {
-        Map<Integer, List<ParkingSpot>> availableSpace = new HashMap<>();
-        for (Integer parkingLevels : parkingLotMap.keySet()) {
-            Map<Integer, ParkingSpot> parkingSpots = parkingLotMap.get(parkingLevels).getParkingSpots();
-            List<ParkingSpot> emptySpaces = parkingSpots.values()
-                                                        .stream()
-                                                        .filter(spots -> spots.getEmpty().equals(Boolean.TRUE))
-                                                        .toList();
-            availableSpace.put(parkingLevels, emptySpaces);
+    public static ParkingLot getInstance(){
+        if (instance==null){
+            synchronized (ParkingLot.class){
+                if (instance==null){
+                    instance = new ParkingLot();
+                }
+            }
         }
-        return availableSpace;
+        return instance;
     }
 
-    public void parkVehicle(Integer level, Integer spotNumber, Vehicle vehicle){
-        ParkingLevel parkingLevel = parkingLotMap.get(level);
-        if (parkingLevel!=null)
-            parkingLevel.occupySpot(spotNumber,vehicle);
-        else{
-            System.out.println("No such level");
-        }
+    public ParkingSpot getAvailableSpot(VehicleSize vehicleSize){
+        return parkingStrategy.getParkingSpots(parkingLevels, vehicleSize);
     }
 
-    public void unParkVehicle(Integer level,Integer spotNumber){
-        ParkingLevel parkingLevel = parkingLotMap.get(level);
-        if (parkingLevel!=null)
-            parkingLevel.emptySpot(spotNumber);
-        else{
-            System.out.println("No such level");
-        }
+    public ParkingTicket entry(Vehicle vehicle){
+        ParkingSpot availableSpot = getAvailableSpot(vehicle.getVehicleSize());
+        availableSpot.parkVehicle(vehicle);
+        return new ParkingTicket(availableSpot);
     }
+
+    public void exit(ParkingTicket parkingTicket, PaymentService paymentService){
+        int moneyToBePaid = parkingTicket.calculateTotalPrice();
+        ParkingSpot spot = parkingTicket.getSpot();
+        paymentService.pay(moneyToBePaid);
+        spot.freeParkingSpot();
+    }
+
+
 }

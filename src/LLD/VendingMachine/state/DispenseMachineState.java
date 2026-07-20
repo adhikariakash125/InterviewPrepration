@@ -26,8 +26,6 @@ public class DispenseMachineState extends VendingMachineState{
         System.out.println("Dispensing the item");
         machine.updatedVendingMachineState(new RefundState(machine));
         machine.initiateRefund();
-        System.out.println("Refund has been completed");
-        machine.updatedVendingMachineState(new IdleState(machine));
     }
 
     @Override

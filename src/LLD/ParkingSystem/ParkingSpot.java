@@ -1,46 +1,60 @@
 package LLD.ParkingSystem;
 
-public class ParkingSpot {
-    private Integer id;
-    private Boolean isEmpty;
-    private Vehicle allowedVehicle;
+import LLD.ParkingSystem.Vehicle.Vehicle;
+import LLD.ParkingSystem.enums.VehicleSize;
 
-    public ParkingSpot(int id, Vehicle allowedVehicle) {
+public class ParkingSpot {
+    private int id;
+    private int price;
+    private boolean isOccupied;
+    private Vehicle vehicle;
+    private VehicleSize vehicleSize;
+
+    public ParkingSpot(int id, int price, VehicleSize vehicleSize) {
         this.id = id;
-        this.isEmpty = true;
-        this.allowedVehicle = allowedVehicle;
+        this.price = price;
+        this.isOccupied = false;
+        this.vehicleSize = vehicleSize;
+    }
+
+    public void freeParkingSpot(){
+        this.isOccupied = false;
+    }
+
+    public void parkVehicle(Vehicle vehicle){
+        this.vehicle = vehicle;
+        this.isOccupied = true;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
+    public void setOccupied(boolean occupied) {
+        isOccupied = occupied;
+    }
+
+    public void setVehicle(Vehicle vehicle) {
+        this.vehicle = vehicle;
     }
 
     public int getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public int getPrice() {
+        return price;
     }
 
-    public Boolean getEmpty() {
-        return isEmpty;
+    public boolean isOccupied() {
+        return isOccupied;
     }
 
-    public void setEmpty(Boolean empty) {
-        isEmpty = empty;
+    public Vehicle getVehicle() {
+        return vehicle;
     }
 
-    public Vehicle getAllowedVehicle() {
-        return allowedVehicle;
-    }
-
-    public void setAllowedVehicle(Vehicle allowedVehicle) {
-        this.allowedVehicle = allowedVehicle;
-    }
-
-    @Override
-    public String toString() {
-        return "ParkingSpot{" +
-                "id=" + id +
-                ", isEmpty=" + isEmpty +
-                ", allowedVehicle=" + allowedVehicle +
-                '}';
+    public VehicleSize getVehicleSize() {
+        return vehicleSize;
     }
 }
