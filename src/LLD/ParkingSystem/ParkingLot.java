@@ -1,21 +1,26 @@
 package LLD.ParkingSystem;
 
-import LLD.ParkingSystem.ParkingStratergy.NearestParkingSpotStrategy;
-import LLD.ParkingSystem.ParkingStratergy.Strategy;
+import LLD.ParkingSystem.ParkingStrategy.NearestParkingSpotStrategy;
+import LLD.ParkingSystem.ParkingStrategy.Strategy;
 import LLD.ParkingSystem.PaymentStrategy.PaymentService;
 import LLD.ParkingSystem.Vehicle.Vehicle;
 import LLD.ParkingSystem.enums.VehicleSize;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ParkingLot {
     private static volatile ParkingLot instance;
     private final List<ParkingLevel> parkingLevels = new ArrayList<>();
-    private final Strategy parkingStrategy;
+    private Strategy parkingStrategy;
 
     private ParkingLot() {
         parkingStrategy = new NearestParkingSpotStrategy();
+    }
+
+    public void setParkingStrategy(Strategy parkingStrategy){
+        this.parkingStrategy = parkingStrategy;
     }
 
     public static ParkingLot getInstance(){
@@ -29,22 +34,45 @@ public class ParkingLot {
         return instance;
     }
 
+    public void addLevel(ParkingLevel parkingLevel){
+        parkingLevels.add(parkingLevel);
+    }
+
     public ParkingSpot getAvailableSpot(VehicleSize vehicleSize){
         return parkingStrategy.getParkingSpots(parkingLevels, vehicleSize);
     }
 
     public ParkingTicket entry(Vehicle vehicle){
         ParkingSpot availableSpot = getAvailableSpot(vehicle.getVehicleSize());
-        availableSpot.parkVehicle(vehicle);
-        return new ParkingTicket(availableSpot);
+        if (availableSpot == null){
+            System.out.println("No available spot for vehicle: " + vehicle.getLicenseNumber());
+            return null;
+        }
+        ParkingSpot reservedSpot = availableSpot.getParkingLevel().occupySpot(availableSpot, vehicle);
+        if (reservedSpot == null){
+            System.out.println("Spot was taken by another vehicle, please retry: " + vehicle.getLicenseNumber());
+            return null;
+        }
+        return new ParkingTicket(reservedSpot);
     }
 
-    public void exit(ParkingTicket parkingTicket, PaymentService paymentService){
-        int moneyToBePaid = parkingTicket.calculateTotalPrice();
-        ParkingSpot spot = parkingTicket.getSpot();
-        paymentService.pay(moneyToBePaid);
-        spot.freeParkingSpot();
+    public Payment exit(ParkingTicket parkingTicket, PaymentService paymentService){
+        parkingTicket.markExit();
+        int amountDue = parkingTicket.calculateTotalPrice();
+        boolean paymentSucceeded = paymentService.pay(amountDue);
+        PaymentStatus status = paymentSucceeded ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
+        if (paymentSucceeded){
+            ParkingSpot spot = parkingTicket.getSpot();
+            spot.getParkingLevel().freeSpot(spot);
+        }
+        return new Payment(parkingTicket.getId(), amountDue, status, paymentService);
     }
 
-
+    public HashMap<Integer, List<ParkingSpot>> getAvailableParkingSpots(){
+        HashMap<Integer,List<ParkingSpot>> availableParkingSpots = new HashMap<>();
+        for (ParkingLevel parkingLevel : this.parkingLevels) {
+            availableParkingSpots.put(parkingLevel.getLevel(), parkingLevel.getAvailable().values().stream().toList());
+        }
+        return availableParkingSpots;
+    }
 }

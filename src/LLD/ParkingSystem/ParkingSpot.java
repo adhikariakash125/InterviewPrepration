@@ -9,6 +9,7 @@ public class ParkingSpot {
     private boolean isOccupied;
     private Vehicle vehicle;
     private VehicleSize vehicleSize;
+    private ParkingLevel parkingLevel;
 
     public ParkingSpot(int id, int price, VehicleSize vehicleSize) {
         this.id = id;
@@ -19,23 +20,12 @@ public class ParkingSpot {
 
     public void freeParkingSpot(){
         this.isOccupied = false;
+        this.vehicle = null;
     }
 
     public void parkVehicle(Vehicle vehicle){
         this.vehicle = vehicle;
         this.isOccupied = true;
-    }
-
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
-    public void setOccupied(boolean occupied) {
-        isOccupied = occupied;
-    }
-
-    public void setVehicle(Vehicle vehicle) {
-        this.vehicle = vehicle;
     }
 
     public int getId() {
@@ -56,5 +46,13 @@ public class ParkingSpot {
 
     public VehicleSize getVehicleSize() {
         return vehicleSize;
+    }
+
+    public void setParkingLevel(ParkingLevel parkingLevel) {
+        this.parkingLevel = parkingLevel;
+    }
+
+    public ParkingLevel getParkingLevel() {
+        return parkingLevel;
     }
 }
