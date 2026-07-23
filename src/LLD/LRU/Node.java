@@ -1,12 +1,12 @@
 package LLD.LRU;
 
-public class Node {
-    final int key;
-    final int value;
-    Node prev;
-    Node next;
+public class Node<K, V> {
+    final K key;
+    final V value;
+    Node<K, V> prev;
+    Node<K, V> next;
 
-    public Node(int key, int value) {
+    public Node(K key, V value) {
         this.key = key;
         this.value = value;
         this.prev = null;
